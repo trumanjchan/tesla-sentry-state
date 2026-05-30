@@ -1,0 +1,20 @@
+{
+  "name": "tesla-sentry-state",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/trumanjchan/tesla-sentry-state#readme",
+  "bugs": {
+    "url": "https://github.com/trumanjchan/tesla-sentry-state/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trumanjchan/tesla-sentry-state.git"
+  },
+  "license": "Apache-2.0",
+  "author": "trumanjchan",
+  "type": "commonjs",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
