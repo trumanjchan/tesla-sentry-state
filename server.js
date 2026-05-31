@@ -1,60 +1,66 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.get(
-  '/.well-known/appspecific/com.tesla.3p.public-key.pem',
-  (req, res) => {
-    res.type('application/x-pem-file');
-    res.send(process.env.TESLA_PUBLIC_KEY);
-  }
-);
-
-app.get("/auth", (req, res) => {
-  const state = crypto.randomUUID();
-
-  const url =
-    "https://auth.tesla.com/oauth2/v3/authorize" +
-    "?response_type=code" +
-    "&client_id=" + process.env.TESLA_CLIENT_ID +
-    "&redirect_uri=" + process.env.TESLA_REDIRECT_URI +
-    "&scope=openid offline_access vehicle_device_data" +
-    "&state=" + state;
-
-  res.redirect(url);
-});
-
-app.get("/auth/callback", async (req, res) => {
-  const code = req.query.code;
-
-  const response = await fetch(
-    "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        grant_type: "authorization_code",
-        client_id: process.env.TESLA_CLIENT_ID,
-        client_secret: process.env.TESLA_CLIENT_SECRET,
-        audience: "https://fleet-api.prd.na.vn.cloud.tesla.com",
-        redirect_uri: process.env.TESLA_REDIRECT_URI,
-        code: code
-      }),
+    if (url.pathname === "/") {
+      return new Response("Hello World!");
     }
-  );
 
-  const data = await response.json();
-  console.log(data);
+    if (
+      url.pathname ===
+      "/.well-known/appspecific/com.tesla.3p.public-key.pem"
+    ) {
+      return new Response(env.TESLA_PUBLIC_KEY, {
+        headers: {
+          "Content-Type": "application/x-pem-file",
+        },
+      });
+    }
 
-  res.send("Auth complete");
-});
+    if (url.pathname === "/auth") {
+      const state = crypto.randomUUID();
 
-app.listen(port, () => {
-  console.log(`app listening on port ${port}`);
-});
+      const authUrl =
+        "https://auth.tesla.com/oauth2/v3/authorize" +
+        "?response_type=code" +
+        "&client_id=" + encodeURIComponent(env.TESLA_CLIENT_ID) +
+        "&redirect_uri=" + encodeURIComponent(env.TESLA_REDIRECT_URI) +
+        "&scope=openid offline_access vehicle_device_data" +
+        "&state=" + state;
+
+      return Response.redirect(authUrl, 302);
+    }
+
+    if (url.pathname === "/auth/callback") {
+      const code = url.searchParams.get("code");
+
+      const response = await fetch(
+        "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            grant_type: "authorization_code",
+            client_id: env.TESLA_CLIENT_ID,
+            client_secret: env.TESLA_CLIENT_SECRET,
+            audience: "https://fleet-api.prd.na.vn.cloud.tesla.com",
+            redirect_uri: env.TESLA_REDIRECT_URI,
+            code,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(JSON.stringify(data));
+
+      return new Response("Auth complete");
+    }
+
+    return new Response("Not Found", {
+      status: 404,
+    });
+  },
+};

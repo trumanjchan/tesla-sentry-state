@@ -10,11 +10,8 @@
     "type": "git",
     "url": "git+https://github.com/trumanjchan/tesla-sentry-state.git"
   },
-  "license": "Apache-2.0",
+  "license": "MIT",
   "author": "trumanjchan",
   "type": "commonjs",
-  "main": "index.js",
-  "dependencies": {
-    "express": "^5.2.1"
-  }
+  "main": "index.js"
 }
