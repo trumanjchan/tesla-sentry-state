@@ -13,5 +13,12 @@
   "license": "MIT",
   "author": "trumanjchan",
   "type": "commonjs",
-  "main": "index.js"
+  "main": "server.js",
+  "scripts": {
+    "start": "npx wrangler dev",
+    "deploy": "npx wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.95.0"
+  }
 }
