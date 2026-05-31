@@ -1,5 +1,18 @@
 {
-  "name": "tesla-sentry-state",
-  "main": "server.js",
-  "compatibility_date": "2026-05-31"
+	"name": "tesla-sentry-state",
+	"main": "server.js",
+	"compatibility_date": "2026-05-31",
+	"d1_databases": [
+		{
+			"binding": "tokens",
+			"database_name": "tokens",
+			"database_id": "f40c69ee-4d8f-4d84-9880-53fa0768e862",
+			"remote": true
+		}
+	],
+	"observability": {
+		"logs": {
+			"enabled": true
+		}
+	}
 }

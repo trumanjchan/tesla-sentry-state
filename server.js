@@ -1,3 +1,17 @@
+async function saveTokens(data) {
+  await env.tokens.prepare(`
+    INSERT OR REPLACE INTO tokens (
+      access_token,
+      refresh_token,
+      expires_at
+    ) VALUES (?, ?, ?)
+  `).bind(
+    data.access_token,
+    data.refresh_token,
+    Date.now() + (data.expires_in * 1000)
+  ).run();
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -53,8 +67,9 @@ export default {
       );
 
       const data = await response.json();
-
       console.log(JSON.stringify(data));
+
+      saveTokens(data);
 
       return new Response("Auth complete");
     }
