@@ -1,15 +1,19 @@
-async function saveTokens(data) {
-  await env.tokens.prepare(`
+async function saveTokens(data, env) {
+  const result = await env.tokens.prepare(`
     INSERT OR REPLACE INTO tokens (
+      id,
       access_token,
       refresh_token,
       expires_at
-    ) VALUES (?, ?, ?)
+    ) VALUES (?, ?, ?, ?)
   `).bind(
+    1,
     data.access_token,
     data.refresh_token,
     Date.now() + (data.expires_in * 1000)
   ).run();
+
+  console.log("D1 insert result:", JSON.stringify(result));
 }
 
 export default {
@@ -69,7 +73,11 @@ export default {
       const data = await response.json();
       console.log(JSON.stringify(data));
 
-      saveTokens(data);
+      try {
+        await saveTokens(data, env);
+      } catch (error) {
+        console.error("Error saving tokens:", error);
+      }
 
       return new Response("Auth complete");
     }
