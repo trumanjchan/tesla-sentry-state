@@ -13,7 +13,7 @@ async function saveTokens(data, env) {
     Date.now() + (data.expires_in * 1000)
   ).run();
 
-  console.log("D1 insert result:", JSON.stringify(result));
+  console.log("D1 insert result:", result.success);
 }
 
 export default {
@@ -80,6 +80,53 @@ export default {
       }
 
       return new Response("Auth complete");
+    }
+
+    if (url.pathname === "/trigger-sync") {
+      const { results } = await env.tokens.prepare(
+        "SELECT access_token, refresh_token, expires_at FROM tokens ORDER BY id DESC LIMIT 1"
+      ).all();
+
+      if (!results || results.length === 0) {
+        return new Response("No access token found in database", { status: 500 });
+      }
+
+      const tokenData = results[0];
+      let accessToken = tokenData.access_token;
+
+      if (Date.now() >= tokenData.expires_at) {
+        console.log("Access token expired.");
+      }
+
+      const vin = env.TESLA_VIN; 
+      const teslaResponse = await fetch(
+        `https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles/${vin}/vehicle_data`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!teslaResponse.ok) {
+        const errorText = await teslaResponse.text();
+        return new Response(`Tesla API Error: ${errorText}`, { status: teslaResponse.status });
+      }
+
+      const vehicleData = await teslaResponse.json();
+      
+      const isLocked = vehicleData.response.vehicle_state.locked;
+      const sentryOn = vehicleData.response.vehicle_state.sentry_mode;
+      const battery = vehicleData.response.charge_state.battery_level;
+
+
+      console.log(`Car Sync Complete. Locked: ${isLocked}, Sentry: ${sentryOn}, Battery: ${battery}%`);
+
+      return new Response(JSON.stringify({ success: true, isLocked, sentryOn, battery }), {
+        headers: { "Content-Type": "application/json" }
+      });
     }
 
     return new Response("Not Found", {
