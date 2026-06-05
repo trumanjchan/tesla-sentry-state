@@ -83,10 +83,15 @@ export default {
     }
 
     if (url.pathname === "/trigger-sync") {
+      const incomingKey = request.headers.get("X-API-Key");
+      if (!incomingKey || incomingKey !== env.MY_SECRET_API_KEY) {
+        console.error("Unauthorized access attempt blocked.");
+        return new Response("Unauthorized", { status: 401 });
+      }
+
       const { results } = await env.tokens.prepare(
         "SELECT access_token, refresh_token, expires_at FROM tokens ORDER BY id DESC LIMIT 1"
       ).all();
-
       if (!results || results.length === 0) {
         return new Response("No access token found in database", { status: 500 });
       }
@@ -116,7 +121,6 @@ export default {
       }
 
       const vehicleData = await teslaResponse.json();
-      
       const isLocked = vehicleData.response.vehicle_state.locked;
       const sentryOn = vehicleData.response.vehicle_state.sentry_mode;
       const battery = vehicleData.response.charge_state.battery_level;
