@@ -71,12 +71,11 @@ export default {
       );
 
       const data = await response.json();
-      console.log(JSON.stringify(data));
 
       try {
         await saveTokens(data, env);
       } catch (error) {
-        console.error("Error saving tokens:", error);
+        console.error("Error saving auth tokens:", error);
       }
 
       return new Response("Auth complete");
@@ -90,7 +89,7 @@ export default {
       }
 
       const { results } = await env.tokens.prepare(
-        "SELECT access_token, refresh_token, expires_at FROM tokens ORDER BY id DESC LIMIT 1"
+        "SELECT access_token, refresh_token, expires_at FROM tokens WHERE id = 1"
       ).all();
       if (!results || results.length === 0) {
         return new Response("No access token found in database", { status: 500 });
@@ -100,7 +99,32 @@ export default {
       let accessToken = tokenData.access_token;
 
       if (Date.now() >= tokenData.expires_at) {
-        console.log("Access token expired.");
+        console.log("Access token expired. Refreshing...");
+
+        const response = await fetch(
+          "https://fleet-auth.prd.vn.cloud.tesla.com/oauth2/v3/token",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              grant_type: "refresh_token",
+              client_id: env.TESLA_CLIENT_ID,
+              refresh_token: tokenData.refresh_token,
+            }),
+          }
+        );
+
+        const data = await response.json();
+
+        try {
+          await saveTokens(data, env);
+
+          accessToken = data.access_token;
+        } catch (error) {
+          console.error("Error saving refreshed tokens:", error);
+        }
       }
 
       const vin = env.TESLA_VIN; 
