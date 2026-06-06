@@ -1,7 +1,7 @@
 # Tesla Sentry State
 
 <div align="center">
-  <img src="images/Notifs.webp" alt="Notifs" style="max-height: 500px; width: auto;">
+  <img src="images/Notifs.webp" alt="Notifs" width="50%">
 </div>
 
 In Tesla vehicles, a Home location can be saved on the touchscreen. There is a setting for excluding automatically turning on sentry mode when parking at Home. The problem with this setting is there is no way of specifying or knowing how big the geofence of Home is. There were a few times where I'd park out on the sidewalk, even more than half a block away, and I'd discover hours later that my sentry mode was never turned on. I finally committed to this project after discovering more than half a day went by with my sentry mode off, and a car's license plate frame right up against my rear bumper. An near-instant notification to my phone confirming the car's lock state, sentry state, and battery level when I park my car and walk away would be incredibly useful.
@@ -74,9 +74,9 @@ Navigate to `http://localhost:8787/`
 ### iOS Shortcuts Automation on Bluetooth Disconnect
 
 <div align="center">
-  <img src="images/iOS_Shortcuts-1.webp" alt="iOS Shortcuts 1" style="max-height: 500px; width: auto;">
+  <img src="images/iOS_Shortcuts-1.webp" alt="iOS Shortcuts 1" width="50%">
 
-  <img src="images/iOS_Shortcuts-2.webp" alt="iOS Shortcuts 2" style="max-height: 500px; width: auto;">
+  <img src="images/iOS_Shortcuts-2.webp" alt="iOS Shortcuts 2" width="50%">
 </div>
 
 </details>
