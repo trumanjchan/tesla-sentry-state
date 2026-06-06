@@ -1,0 +1,43 @@
+npx wrangler login
+
+npx wrangler d1 execute tokens --remote --command="SELECT access_token FROM tokens;"
+
+export TESLA_ACCESS_TOKEN=""
+
+export VIN=""
+
+curl -X GET "https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles/$VIN/fleet_telemetry_config" \
+  -H "Authorization: Bearer $TESLA_ACCESS_TOKEN" | jq
+
+curl -X GET \
+"https://fleet-api.prd.na.vn.cloud.tesla.com/api/1/vehicles/$VIN/fleet_telemetry_errors" \
+-H "Authorization: Bearer $TESLA_ACCESS_TOKEN" | jq
+
+/* flatten a .pem key with the below command */
+node -e 'console.log(JSON.stringify(require("fs").readFileSync("tls-cert.pem", "utf8")))'
+
+/* replace ? with your Cloudflare Worker hostname and telemetry-ca.pem's key */
+curl -k -X POST "https://localhost:4443/api/1/vehicles/fleet_telemetry_config" \
+  -H "Authorization: Bearer $TESLA_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vins": ["'"$VIN"'"],
+    "config": {
+      "hostname": "?",
+      "port": 443,
+      "ca": "?",
+      "fields": {
+        "Locked": { "interval_seconds": 1 },
+        "SentryMode": { "interval_seconds": 1 },
+        "Soc": { "interval_seconds": 300 }
+      }
+    }
+  }'
+
+/* replace ? with your Cloudflare Worker hostname */
+npx wscat -c wss://?
+
+curl --request DELETE \
+  --url "https://localhost:4443/api/1/vehicles/$VIN/fleet_telemetry_config" \
+  --header "Authorization: Bearer $TESLA_ACCESS_TOKEN" \
+  --insecure
