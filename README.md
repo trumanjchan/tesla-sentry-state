@@ -13,6 +13,8 @@ Initially I wanted to try setting up Tesla Fleet Telemetry with Discord Webhooks
 3. Park and walk away. Bluetooth disconnects from the car, triggering the iOS Shortcuts automation which first runs the 10s wait block. Car locks soon after. After wait block finishes, receive push notification of the lock state, sentry state, and battery level along with the date and time.
 > **Note:** After wait block finishes, if the access token expired, new auth tokens update D1 tokens row and is used subsequently for persistence.
 
+[Watch Demo Video](https://youtu.be/Itan0VwQzhE?si=8gMgpzmJxJeXpuUy)
+
 ---
 
 <details>
