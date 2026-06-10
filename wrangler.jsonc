@@ -8,6 +8,12 @@
 			"database_name": "tokens",
 			"database_id": "f40c69ee-4d8f-4d84-9880-53fa0768e862",
 			"remote": true
+		},
+		{
+			"binding": "status",
+			"database_name": "status",
+			"database_id": "97ad26df-f530-490f-a5aa-16609e0e2a7d",
+			"remote": true
 		}
 	],
 	"observability": {

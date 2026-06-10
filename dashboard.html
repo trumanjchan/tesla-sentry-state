@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Dashboard</title>
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+
+      .card {
+        background-color: #262626;
+        padding: 2rem;
+        margin: 0 20px;
+        border-radius: 30px;
+        width: 100%;
+        max-width: 350px;
+
+        h1 {
+          margin: 0 0 1.5rem 0;
+          font-size: 1.5rem;
+          color: #38bdf8;
+        }
+
+        .stat {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 1rem 0;
+          font-size: 1.1rem;
+
+          .label {
+            color: #94a3b8;
+          }
+
+          .value {
+            font-weight: bold;
+          }
+
+          .loading {
+            color: #38bdf8;
+            font-style: italic;
+          }
+        }
+
+        .time {
+          font-size: 0.85rem;
+          color: #64748b;
+          text-align: right;
+          margin-top: 1.5rem;
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Tesla Status</h1>
+    
+    <div class="stat">
+      <span class="label">Locked:</span>
+      <span id="lock-value" class="value loading">Loading...</span>
+    </div>
+    
+    <div class="stat">
+      <span class="label">Sentry:</span>
+      <span id="sentry-value" class="value loading">Loading...</span>
+    </div>
+    
+    <div class="stat">
+      <span class="label">Battery:</span>
+      <span id="battery-value" class="value loading">Loading...</span>
+    </div>
+    
+    <div id="time-value" class="time">Fetching latest update...</div>
+  </div>
+
+  <script>
+    async function fetchStatus() {
+      try {
+        const response = await fetch('/dashboard/data');
+        if (!response.ok) throw new Error('Network response status error');
+        
+        const data = await response.json();
+
+        const isLocked = Boolean(Number(data.isLocked)); 
+        const sentryOn = Boolean(Number(data.sentryOn));
+
+        document.getElementById('lock-value').innerText = isLocked ? "🟢" : "🔴";
+        document.getElementById('sentry-value').innerText = sentryOn ? "🟢" : "🔴";
+        document.getElementById('battery-value').innerText = data.battery + "%";
+        document.getElementById('time-value').innerText = new Date(data.updatedAt).toLocaleString();
+        
+        document.querySelectorAll('.value').forEach(el => el.classList.remove('loading'));
+
+      } catch (error) {
+        console.error("Failed to update dashboard UI:", error);
+        document.querySelectorAll('.value').forEach(el => el.innerText = "Error");
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchStatus);
+  </script>
+</body>
+</html>

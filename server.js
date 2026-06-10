@@ -1,3 +1,6 @@
+import htmlPage from "./dashboard.html";
+
+
 async function saveTokens(data, env) {
   const result = await env.tokens.prepare(`
     INSERT OR REPLACE INTO tokens (
@@ -13,7 +16,27 @@ async function saveTokens(data, env) {
     Date.now() + (data.expires_in * 1000)
   ).run();
 
-  console.log("D1 insert result:", result.success);
+  console.log("D1 tokens insert result:", result.success);
+}
+
+async function saveStatus(isLocked, sentryOn, battery, env) {
+  const result = await env.status.prepare(`
+    INSERT OR REPLACE INTO status (
+      id,
+      updated_at,
+      isLocked,
+      sentryOn,
+      battery
+    ) VALUES (?, ?, ?, ?, ?)
+  `).bind(
+    1,
+    Date.now(),
+    isLocked,
+    sentryOn,
+    battery
+  ).run();
+
+  console.log("D1 status insert result:", result.success);
 }
 
 export default {
@@ -92,7 +115,7 @@ export default {
         "SELECT access_token, refresh_token, expires_at FROM tokens WHERE id = 1"
       ).all();
       if (!results || results.length === 0) {
-        return new Response("No access token found in database", { status: 500 });
+        return new Response("No tokens found in database", { status: 500 });
       }
 
       const tokenData = results[0];
@@ -149,10 +172,39 @@ export default {
       const sentryOn = vehicleData.response.vehicle_state.sentry_mode;
       const battery = vehicleData.response.charge_state.battery_level;
 
-
       console.log(`Car Sync Complete. Locked: ${isLocked}, Sentry: ${sentryOn}, Battery: ${battery}%`);
+      try {
+        await saveStatus(isLocked, sentryOn, battery, env);
+      } catch (error) {
+        console.error("Error saving status:", error);
+      }
 
       return new Response(JSON.stringify({ success: true, isLocked, sentryOn, battery }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    if (url.pathname === "/dashboard") {
+      return new Response(htmlPage, {
+        headers: { "Content-Type": "text/html; charset=utf-8" }
+      });
+    }
+
+    if (url.pathname === "/dashboard/data") {
+      const { results } = await env.status.prepare(
+        "SELECT updated_at, isLocked, sentryOn, battery FROM status WHERE id = 1"
+      ).all();
+      if (!results || results.length === 0) {
+        return new Response("No status found in database", { status: 500 });
+      }
+
+      const statusData = results[0];
+      const isLocked = statusData.isLocked;
+      const sentryOn = statusData.sentryOn;
+      const battery = statusData.battery;
+      const updatedAt = statusData.updated_at;
+
+      return new Response(JSON.stringify({ isLocked, sentryOn, battery, updatedAt }), {
         headers: { "Content-Type": "application/json" }
       });
     }

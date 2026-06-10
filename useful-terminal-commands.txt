@@ -1,5 +1,9 @@
 npx wrangler login
 
+npx wrangler d1 create tokens
+
+npx wrangler d1 execute tokens --remote --file=./tokens-schema.sql
+
 npx wrangler d1 execute tokens --remote --command="SELECT access_token FROM tokens;"
 
 export TESLA_ACCESS_TOKEN=""
